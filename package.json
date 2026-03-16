@@ -1,0 +1,35 @@
+{
+  "name": "@xtaskjs/cli",
+  "version": "0.1.0",
+  "description": "Commander-based CLI for creating and scaffolding XTaskJS projects.",
+  "type": "module",
+  "bin": {
+    "xtask": "./dist/xtask.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "tsx src/xtask.ts",
+    "dev": "tsx watch src/xtask.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import tsx --test tests/**/*.test.ts"
+  },
+  "keywords": [
+    "xtaskjs",
+    "commander",
+    "cli",
+    "typescript"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^14.0.1",
+    "tar": "^7.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}
