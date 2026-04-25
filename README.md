@@ -13,6 +13,8 @@ Console client for bootstrapping XTaskJS applications from the official TypeScri
 - `generate middleware`: creates an XTaskJS middleware skeleton
 - `generate module`: creates a feature scaffold with controller, service, repository, DTO, and barrel exports
 - `generate resource`: creates controller, service, and repository files as a feature scaffold
+- `cache`: talks to an app's XTaskJS cache management endpoints for inspection and clearing
+- `add`: installs latest official `@xtaskjs/*` modules into an existing project
 
 ## Install
 
@@ -126,6 +128,74 @@ Generate files in a different source directory:
 npm run start -- generate service auth --path src/modules/auth
 ```
 
+List registered cache models from a running XTaskJS app:
+
+```bash
+npm run start -- cache models
+```
+
+Inspect one cache model:
+
+```bash
+npm run start -- cache model products
+```
+
+Inspect a single cache entry:
+
+```bash
+npm run start -- cache entry products 42
+```
+
+Clear one model or all registered models:
+
+```bash
+npm run start -- cache clear products
+npm run start -- cache clear-all
+```
+
+Inspect HTTP/browser cache metadata exposed by `createCacheManagementController()`:
+
+```bash
+npm run start -- cache http-routes
+npm run start -- cache http-route --method GET --path /articles/landing
+```
+
+Target a different server or management controller path:
+
+```bash
+npm run start -- cache models --server http://127.0.0.1:4000 --management-path /internal/cache
+```
+
+Install one or more XTaskJS modules in the current project:
+
+```bash
+npm run start -- add cache queues socket-io
+```
+
+Install all currently published XTaskJS modules:
+
+```bash
+npm run start -- add --all
+```
+
+Use a different package manager for module installation:
+
+```bash
+npm run start -- add typeorm cqrs --package-manager pnpm
+```
+
+List the official modules with their latest published npm version:
+
+```bash
+npm run start -- add --list
+```
+
+List only selected modules and versions:
+
+```bash
+npm run start -- add --list core cache socket-io
+```
+
 ## Troubleshooting
 
 If you installed the package globally but `xtask` is not found, or the command does not appear to work, check the active Node environment first.
@@ -163,4 +233,7 @@ npx @xtaskjs/cli --help
 - `--with-guard` adds a `*.guard.ts` file and applies `@UseGuards(...)` to generated module/resource controllers.
 - `--with-dto` adds a `*.dto.ts` file to a resource scaffold.
 - `--crud` upgrades a resource scaffold to CRUD-style controller, service, and repository methods and also generates the DTO file.
+- The `cache` command expects your app to opt into the XTaskJS management controller, typically with `createCacheManagementController({ path: "/ops/cache" })`.
 - Generated DTOs assume the target app installs `class-validator` and, when needed, `class-transformer`, matching XTaskJS validation guidance.
+- The `add` command resolves aliases like `cache` or `socket-io` to the official npm packages under the `@xtaskjs` scope and installs the latest published versions.
+- `add --list` queries the npm registry and prints the current published version for each official `@xtaskjs` module.
