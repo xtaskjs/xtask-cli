@@ -18,6 +18,7 @@ test("resolveModules supports --all mode", () => {
   const modules = resolveModules([], true);
   assert.ok(modules.includes("@xtaskjs/core"));
   assert.ok(modules.includes("@xtaskjs/socket-io"));
+  assert.ok(modules.includes("@xtaskjs/throttler"));
   assert.ok(modules.includes("@xtaskjs/value-objects"));
 });
 

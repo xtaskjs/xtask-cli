@@ -13,6 +13,12 @@ Console client for bootstrapping XTaskJS applications from the official TypeScri
 - `generate middleware`: creates an XTaskJS middleware skeleton
 - `generate module`: creates a feature scaffold with controller, service, repository, DTO, and barrel exports
 - `generate resource`: creates controller, service, and repository files as a feature scaffold
+- `generate gateway`: creates a Socket.IO gateway skeleton with common handlers
+- `generate value-object`: creates a StringValueObject-based domain primitive
+- `generate event-aggregate`: creates an event-sourced aggregate scaffold
+- `generate event-subscriber`: creates an event-source subscriber scaffold
+- `generate throttle-guard`: creates a ThrottlerService-backed guard scaffold
+- `generate throttle-config`: creates a `configureThrottler(...)` bootstrap scaffold
 - `cache`: talks to an app's XTaskJS cache management endpoints for inspection and clearing
 - `add`: installs latest official `@xtaskjs/*` modules into an existing project
 
@@ -108,6 +114,32 @@ Generate a feature module folder:
 
 ```bash
 npm run start -- generate module billing --path src/modules
+```
+
+Generate a Socket.IO gateway scaffold:
+
+```bash
+npm run start -- generate gateway chat
+```
+
+Generate a value object scaffold:
+
+```bash
+npm run start -- generate value-object email-address
+```
+
+Generate event-source aggregate and subscriber scaffolds:
+
+```bash
+npm run start -- generate event-aggregate users
+npm run start -- generate event-subscriber users
+```
+
+Generate throttler guard and config scaffolds:
+
+```bash
+npm run start -- generate throttle-guard api
+npm run start -- generate throttle-config api
 ```
 
 Generate a module and wire a guard into its controller:
@@ -229,6 +261,10 @@ npx @xtaskjs/cli --help
 
 - The `create` command downloads the starter from `https://github.com/xtaskjs/typescript-starter`.
 - Generated controller templates follow the decorator patterns used by XTaskJS samples and the official starter.
+- `generate gateway` aligns with `@xtaskjs/socket-io` conventions from the official Socket.IO sample.
+- `generate value-object` aligns with `@xtaskjs/value-objects` by creating a normalized `StringValueObject` scaffold.
+- `generate event-aggregate` and `generate event-subscriber` provide starter files for `@xtaskjs/event-source` workflows.
+- `generate throttle-guard` and `generate throttle-config` provide starter files for `@xtaskjs/throttler` integration.
 - `resource` and `module` scaffolds create a dedicated feature directory by default; pass `--flat` to write files directly into the chosen path.
 - `--with-guard` adds a `*.guard.ts` file and applies `@UseGuards(...)` to generated module/resource controllers.
 - `--with-dto` adds a `*.dto.ts` file to a resource scaffold.
@@ -236,4 +272,5 @@ npx @xtaskjs/cli --help
 - The `cache` command expects your app to opt into the XTaskJS management controller, typically with `createCacheManagementController({ path: "/ops/cache" })`.
 - Generated DTOs assume the target app installs `class-validator` and, when needed, `class-transformer`, matching XTaskJS validation guidance.
 - The `add` command resolves aliases like `cache` or `socket-io` to the official npm packages under the `@xtaskjs` scope and installs the latest published versions.
+- The `add` command includes recently added official modules such as `@xtaskjs/throttler`.
 - `add --list` queries the npm registry and prints the current published version for each official `@xtaskjs` module.

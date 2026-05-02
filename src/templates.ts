@@ -9,6 +9,12 @@ export const generatorKinds = [
   "guard",
   "middleware",
   "module",
+  "gateway",
+  "value-object",
+  "event-aggregate",
+  "event-subscriber",
+  "throttle-guard",
+  "throttle-config",
 ] as const;
 
 export type GeneratorKind = (typeof generatorKinds)[number];
@@ -107,4 +113,153 @@ export function renderModuleIndexTemplate(tokens: NameTokens, options: { withGua
   const guardExport = options.withGuard ? `export * from "./${tokens.kebabName}.guard";\n` : "";
 
   return `export * from "./${tokens.kebabName}.controller";\nexport * from "./${tokens.kebabName}.service";\nexport * from "./${tokens.kebabName}.repository";\nexport * from "./${tokens.kebabName}.dto";\n${guardExport}`;
+}
+
+export function renderGatewayTemplate(tokens: NameTokens): string {
+  return `import { Service } from "@xtaskjs/core";
+import {
+  OnSocketConnection,
+  OnSocketDisconnect,
+  OnSocketEvent,
+  SocketGateway,
+} from "@xtaskjs/socket-io";
+
+@Service()
+@SocketGateway({ namespace: ${JSON.stringify(`/${tokens.kebabName}`)}, group: [${JSON.stringify(tokens.kebabName)}] })
+export class ${tokens.pascalName}Gateway {
+  @OnSocketConnection()
+  onConnect(socket: { id: string }) {
+    return {
+      connected: true,
+      socketId: socket.id,
+      namespace: ${JSON.stringify(`/${tokens.kebabName}`)},
+    };
+  }
+
+  @OnSocketEvent("ping")
+  onPing(payload: { message?: string }, context: { socket: { id: string } }) {
+    return {
+      event: "pong",
+      message: payload?.message ?? "pong",
+      socketId: context.socket.id,
+    };
+  }
+
+  @OnSocketDisconnect()
+  onDisconnect(reason: string) {
+    return {
+      disconnected: true,
+      reason,
+    };
+  }
+}
+`;
+}
+
+export function renderValueObjectTemplate(tokens: NameTokens): string {
+  return `import { StringValueObject } from "@xtaskjs/value-objects";
+
+export class ${tokens.pascalName} extends StringValueObject {
+  constructor(value: string) {
+    const normalized = value.trim().toLowerCase();
+
+    if (!normalized) {
+      throw new Error(${JSON.stringify(`${tokens.pascalName} cannot be empty`)});
+    }
+
+    super(normalized);
+  }
+}
+`;
+}
+
+export function renderEventAggregateTemplate(tokens: NameTokens): string {
+  return `import {
+  ApplyEvent,
+  EventSourcedAggregate,
+  EventSourcedAggregateRoot,
+} from "@xtaskjs/event-source";
+
+export class ${tokens.pascalName}CreatedEvent {
+  constructor(
+    public readonly id: string,
+    public readonly name: string,
+  ) {}
+}
+
+@EventSourcedAggregate({ stream: ${JSON.stringify(tokens.kebabName)} })
+export class ${tokens.pascalName}Aggregate extends EventSourcedAggregateRoot {
+  public name?: string;
+
+  create(id: string, name: string) {
+    this.assignStreamId(id);
+    this.raiseEvent(new ${tokens.pascalName}CreatedEvent(id, name));
+  }
+
+  @ApplyEvent(${tokens.pascalName}CreatedEvent)
+  onCreated(event: ${tokens.pascalName}CreatedEvent) {
+    this.name = event.name;
+  }
+}
+`;
+}
+
+export function renderEventSubscriberTemplate(tokens: NameTokens): string {
+  return `import { Service } from "@xtaskjs/core";
+import { EventSourceSubscriber, IEventSourceSubscriber } from "@xtaskjs/event-source";
+import { ${tokens.pascalName}CreatedEvent } from "./${tokens.kebabName}.aggregate";
+
+@Service()
+@EventSourceSubscriber(${tokens.pascalName}CreatedEvent)
+export class ${tokens.pascalName}Subscriber implements IEventSourceSubscriber<${tokens.pascalName}CreatedEvent> {
+  handle(event: ${tokens.pascalName}CreatedEvent) {
+    return {
+      handled: true,
+      id: event.id,
+      name: event.name,
+    };
+  }
+}
+`;
+}
+
+export function renderThrottleGuardTemplate(tokens: NameTokens): string {
+  return `import { GuardLike, RouteExecutionContext } from "@xtaskjs/common";
+import { InjectThrottlerService, ThrottlerService } from "@xtaskjs/throttler";
+import { Service } from "@xtaskjs/core";
+
+@Service()
+export class ${tokens.pascalName}ThrottleGuard implements GuardLike {
+  constructor(
+    @InjectThrottlerService()
+    private readonly throttler: ThrottlerService,
+  ) {}
+
+  async canActivate(context: RouteExecutionContext) {
+    const request = context.request as { ip?: string } | undefined;
+    const key = [${JSON.stringify(tokens.kebabName)}, request?.ip || "unknown"].join(":");
+
+    await this.throttler.consume(key, {
+      limit: 10,
+      ttl: "1m",
+    });
+
+    return true;
+  }
+}
+`;
+}
+
+export function renderThrottleConfigTemplate(tokens: NameTokens): string {
+  return `import { configureThrottler } from "@xtaskjs/throttler";
+
+export function configure${tokens.pascalName}Throttler() {
+  configureThrottler({
+    limit: 5,
+    ttl: "10s",
+    driver: "memory",
+    errorMessage: "Rate limit exceeded. Please retry later.",
+  });
+}
+`;
 }

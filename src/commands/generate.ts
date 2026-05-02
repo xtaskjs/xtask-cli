@@ -1,6 +1,9 @@
 import { resolve } from "node:path";
 import { Command, InvalidArgumentError } from "commander";
 import {
+  renderEventAggregateTemplate,
+  renderEventSubscriberTemplate,
+  renderGatewayTemplate,
   generatorKinds,
   type GeneratorKind,
   renderControllerTemplate,
@@ -13,6 +16,9 @@ import {
   renderModuleIndexTemplate,
   renderRepositoryTemplate,
   renderServiceTemplate,
+  renderThrottleConfigTemplate,
+  renderThrottleGuardTemplate,
+  renderValueObjectTemplate,
 } from "../templates.js";
 import { writeTextFile } from "../utils/filesystem.js";
 import { buildNameTokens } from "../utils/naming.js";
@@ -84,6 +90,12 @@ function buildFiles(
   const dtoPath = resolve(scaffoldDirectory, `${tokens.kebabName}.dto.ts`);
   const scaffoldGuardPath = resolve(scaffoldDirectory, `${tokens.kebabName}.guard.ts`);
   const moduleIndexPath = resolve(scaffoldDirectory, "index.ts");
+  const gatewayPath = resolve(baseDirectory, `${tokens.kebabName}.gateway.ts`);
+  const valueObjectPath = resolve(baseDirectory, `${tokens.kebabName}.value-object.ts`);
+  const aggregatePath = resolve(baseDirectory, `${tokens.kebabName}.aggregate.ts`);
+  const subscriberPath = resolve(baseDirectory, `${tokens.kebabName}.subscriber.ts`);
+  const throttleGuardPath = resolve(baseDirectory, `${tokens.kebabName}.throttle-guard.ts`);
+  const throttleConfigPath = resolve(baseDirectory, `${tokens.kebabName}.throttle-config.ts`);
   const useGuard = Boolean(options.withGuard);
   const includeDto = Boolean(options.withDto || options.crud);
   const useCrud = Boolean(options.crud);
@@ -132,5 +144,17 @@ function buildFiles(
         ...(useGuard ? [{ path: scaffoldGuardPath, contents: renderGuardTemplate(tokens) }] : []),
         { path: moduleIndexPath, contents: renderModuleIndexTemplate(tokens, { withGuard: useGuard }) },
       ];
+    case "gateway":
+      return [{ path: gatewayPath, contents: renderGatewayTemplate(tokens) }];
+    case "value-object":
+      return [{ path: valueObjectPath, contents: renderValueObjectTemplate(tokens) }];
+    case "event-aggregate":
+      return [{ path: aggregatePath, contents: renderEventAggregateTemplate(tokens) }];
+    case "event-subscriber":
+      return [{ path: subscriberPath, contents: renderEventSubscriberTemplate(tokens) }];
+    case "throttle-guard":
+      return [{ path: throttleGuardPath, contents: renderThrottleGuardTemplate(tokens) }];
+    case "throttle-config":
+      return [{ path: throttleConfigPath, contents: renderThrottleConfigTemplate(tokens) }];
   }
 }

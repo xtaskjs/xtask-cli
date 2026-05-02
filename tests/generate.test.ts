@@ -240,6 +240,85 @@ test("resource-only presets are rejected for other generators", async () => {
   );
 });
 
+test("gateway generator emits socket-io scaffold", async () => {
+  const sandbox = await createSandbox("gateway");
+
+  await usingSandbox(sandbox, async () => {
+    await runGenerate(["gateway", "chat", "--path", sandbox]);
+
+    const gateway = await readUtf8(join(sandbox, "chat.gateway.ts"));
+
+    assert.match(gateway, /@SocketGateway\(\{ namespace: "\/chat"/);
+    assert.match(gateway, /@OnSocketConnection\(\)/);
+    assert.match(gateway, /@OnSocketEvent\("ping"\)/);
+    assert.match(gateway, /@OnSocketDisconnect\(\)/);
+  });
+});
+
+test("value-object generator emits value object scaffold", async () => {
+  const sandbox = await createSandbox("value-object");
+
+  await usingSandbox(sandbox, async () => {
+    await runGenerate(["value-object", "email-address", "--path", sandbox]);
+
+    const valueObject = await readUtf8(join(sandbox, "email-address.value-object.ts"));
+
+    assert.match(valueObject, /extends StringValueObject/);
+    assert.match(valueObject, /class EmailAddress/);
+    assert.match(valueObject, /trim\(\)\.toLowerCase\(\)/);
+  });
+});
+
+test("event-source generators emit aggregate and subscriber scaffolds", async () => {
+  const sandbox = await createSandbox("event-source");
+
+  await usingSandbox(sandbox, async () => {
+    await runGenerate(["event-aggregate", "users", "--path", sandbox]);
+    await runGenerate(["event-subscriber", "users", "--path", sandbox]);
+
+    const aggregate = await readUtf8(join(sandbox, "users.aggregate.ts"));
+    const subscriber = await readUtf8(join(sandbox, "users.subscriber.ts"));
+
+    assert.match(aggregate, /@EventSourcedAggregate\(\{ stream: "users" \}\)/);
+    assert.match(aggregate, /class UsersAggregate extends EventSourcedAggregateRoot/);
+    assert.match(aggregate, /@ApplyEvent\(UsersCreatedEvent\)/);
+
+    assert.match(subscriber, /@EventSourceSubscriber\(UsersCreatedEvent\)/);
+    assert.match(subscriber, /implements IEventSourceSubscriber<UsersCreatedEvent>/);
+    assert.match(subscriber, /from "\.\/users\.aggregate"/);
+  });
+});
+
+test("throttle-guard generator emits throttler guard scaffold", async () => {
+  const sandbox = await createSandbox("throttle-guard");
+
+  await usingSandbox(sandbox, async () => {
+    await runGenerate(["throttle-guard", "api", "--path", sandbox]);
+
+    const guard = await readUtf8(join(sandbox, "api.throttle-guard.ts"));
+
+    assert.match(guard, /class ApiThrottleGuard implements GuardLike/);
+    assert.match(guard, /@InjectThrottlerService\(\)/);
+    assert.match(guard, /this\.throttler\.consume\(key, \{/);
+    assert.match(guard, /ttl: "1m"/);
+  });
+});
+
+test("throttle-config generator emits configureThrottler scaffold", async () => {
+  const sandbox = await createSandbox("throttle-config");
+
+  await usingSandbox(sandbox, async () => {
+    await runGenerate(["throttle-config", "api", "--path", sandbox]);
+
+    const config = await readUtf8(join(sandbox, "api.throttle-config.ts"));
+
+    assert.match(config, /configureApiThrottler\(\)/);
+    assert.match(config, /configureThrottler\(\{/);
+    assert.match(config, /limit: 5/);
+    assert.match(config, /driver: "memory"/);
+  });
+});
+
 async function usingSandbox<T>(sandbox: string, callback: () => Promise<T>): Promise<T> {
   try {
     return await callback();
