@@ -13,6 +13,9 @@ Workspace local con el paquete del CLI de XTaskJS en `packages/cli`, alineado co
 - `generate controller`: creates an XTaskJS controller skeleton
 - `generate service`: creates an XTaskJS service skeleton
 - `generate repository`: creates an XTaskJS repository skeleton
+- `generate controller-test`: creates a unit test scaffold for a controller using `@xtaskjs/testing` and `vitest`
+- `generate service-test`: creates a unit test scaffold for a service using `@xtaskjs/testing` and `vitest`
+- `generate resource-tests`: creates controller, service, and repository unit test scaffolds in one command
 - `generate dto`: creates a validation DTO skeleton
 - `generate guard`: creates an XTaskJS guard skeleton
 - `generate middleware`: creates an XTaskJS middleware skeleton
@@ -117,6 +120,52 @@ Generate a DTO for request validation:
 pnpm --filter @xtaskjs/cli start -- generate dto create-user
 ```
 
+Generate a unit test scaffold for an existing service:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate service-test users
+```
+
+Generate a unit test scaffold for a controller:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate controller-test users
+```
+
+Generate a CRUD-focused controller test scaffold:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate controller-test users --crud
+```
+
+Generate a runnable CRUD controller test with basic mocks:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate controller-test users --crud --run
+```
+
+`controller-test` can auto-detect CRUD controllers when `users.controller.ts` already exists in `--path`; if it is not CRUD, it falls back to the simple controller test scaffold.
+
+Generate all unit tests for a resource (controller + service + repository):
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate resource-tests users
+```
+
+Generate runnable tests with basic mocks (instead of skipped placeholders):
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate resource-tests users --run
+```
+
+Suppress autodetection info logs for cleaner CI output:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- generate resource-tests users --run --quiet
+```
+
+`resource-tests` also auto-detects CRUD shape from an existing `*.controller.ts` and switches `controller.spec` between CRUD or simple mode automatically.
+
 Generate a guard or middleware:
 
 ```bash
@@ -218,6 +267,12 @@ Install one or more XTaskJS modules in the current project:
 pnpm --filter @xtaskjs/cli start -- add cache queues socket-io
 ```
 
+Install testing support for unit tests:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- add testing
+```
+
 Install all currently published XTaskJS modules:
 
 ```bash
@@ -283,8 +338,13 @@ pnpm dlx @xtaskjs/cli --help
 - `--with-guard` adds a `*.guard.ts` file and applies `@UseGuards(...)` to generated module/resource controllers.
 - `--with-dto` adds a `*.dto.ts` file to a resource scaffold.
 - `--crud` upgrades a resource scaffold to CRUD-style controller, service, and repository methods and also generates the DTO file.
+- `--crud` is also supported on `controller-test` to scaffold CRUD test coverage for `list`, `getById`, `create`, `update`, and `remove`.
+- `controller-test` auto-detects CRUD shape from an existing `*.controller.ts` file in the selected path and falls back to simple tests when CRUD methods are missing.
+- `resource-tests` auto-detects CRUD shape from an existing `*.controller.ts` file in the selected path for `controller.spec` generation and falls back to simple tests when CRUD methods are missing.
+- `--run` is supported on `controller-test`, `service-test`, and `resource-tests` to emit runnable tests with basic mocks.
+- `--quiet` suppresses informational autodetection logs (for example `Info: controller-test: CRUD detected`) while still printing generated file paths.
 - The `cache` command expects your app to opt into the XTaskJS management controller, typically with `createCacheManagementController({ path: "/ops/cache" })`.
 - Generated DTOs assume the target app installs `class-validator` and, when needed, `class-transformer`, matching XTaskJS validation guidance.
 - The `add` command resolves aliases like `cache` or `socket-io` to the official npm packages under the `@xtaskjs` scope and installs the latest published versions.
-- The `add` command includes recently added official modules such as `@xtaskjs/throttler`.
+- The `add` command includes recently added official modules such as `@xtaskjs/throttler` and `@xtaskjs/testing`.
 - `add --list` queries the npm registry and prints the current published version for each official `@xtaskjs` module.

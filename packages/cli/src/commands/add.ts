@@ -19,6 +19,7 @@ export const xtaskModules = [
   "@xtaskjs/security",
   "@xtaskjs/socket-io",
   "@xtaskjs/throttler",
+  "@xtaskjs/testing",
   "@xtaskjs/typeorm",
   "@xtaskjs/value-objects",
 ] as const;

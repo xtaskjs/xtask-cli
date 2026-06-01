@@ -4,6 +4,9 @@ export const generatorKinds = [
   "controller",
   "service",
   "repository",
+  "controller-test",
+  "service-test",
+  "resource-tests",
   "resource",
   "dto",
   "guard",
@@ -91,6 +94,225 @@ export function renderCrudServiceTemplate(tokens: NameTokens): string {
 
 export function renderRepositoryTemplate(tokens: NameTokens): string {
   return `import { Repository } from "@xtaskjs/core";\n\n@Repository({ scope: "singleton" })\nexport class ${tokens.pascalName}Repository {\n  findAll() {\n    return [];\n  }\n}\n`;
+}
+
+export function renderControllerTestTemplate(tokens: NameTokens, options: { run?: boolean; crud?: boolean } = {}): string {
+  if (options.crud && !options.run) {
+    return `import "reflect-metadata";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Controller } from "./${tokens.kebabName}.controller";
+
+describe("${tokens.pascalName}Controller", () => {
+  test.skip("validates CRUD controller contract (list/getById/create/update/remove)", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Controller,
+        // Add Logger and ${tokens.pascalName}Service provider overrides for CRUD tests.
+      ],
+    }).compile();
+
+    const controller = moduleRef.get(${tokens.pascalName}Controller);
+
+    expect(controller).toBeDefined();
+
+    await moduleRef.close();
+  });
+});
+`;
+  }
+
+  if (!options.run) {
+    return `import "reflect-metadata";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Controller } from "./${tokens.kebabName}.controller";
+
+describe("${tokens.pascalName}Controller", () => {
+  test.skip("resolves service from the testing module", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Controller,
+        // Add provider overrides here when the controller has constructor dependencies.
+      ],
+    }).compile();
+
+    const controller = moduleRef.get(${tokens.pascalName}Controller);
+
+    expect(controller).toBeDefined();
+
+    await moduleRef.close();
+  });
+});
+`;
+  }
+
+  if (options.crud) {
+    return `import "reflect-metadata";
+import { Logger } from "@xtaskjs/common";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Controller } from "./${tokens.kebabName}.controller";
+import { ${tokens.pascalName}Service } from "./${tokens.kebabName}.service";
+
+const loggerMock: Pick<Logger, "info" | "warn" | "error"> = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: () => undefined,
+};
+
+const serviceMock = {
+  findAll: () => [{ id: "1", name: "sample" }],
+  findOne: (id: string) => ({ id, name: "sample" }),
+  create: (input: { name: string }) => ({ id: "created", ...input }),
+  update: (id: string, input: { name: string }) => ({ id, ...input }),
+  remove: (id: string) => ({ deleted: id === "1" }),
+};
+
+describe("${tokens.pascalName}Controller", () => {
+  test("runs CRUD controller actions (list/getById/create/update/remove)", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Controller,
+        { provide: Logger, useValue: loggerMock },
+        { provide: ${tokens.pascalName}Service, useValue: serviceMock },
+      ],
+    }).compile();
+
+    const controller = moduleRef.get(${tokens.pascalName}Controller) as unknown as {
+      list: () => unknown;
+      getById: (id: string) => unknown;
+      create: (input: { name: string }) => unknown;
+      update: (id: string, input: { name: string }) => unknown;
+      remove: (id: string) => unknown;
+    };
+
+    expect(controller.list()).toEqual(serviceMock.findAll());
+    expect(controller.getById("1")).toEqual(serviceMock.findOne("1"));
+    expect(controller.create({ name: "new" })).toEqual(serviceMock.create({ name: "new" }));
+    expect(controller.update("1", { name: "updated" })).toEqual(serviceMock.update("1", { name: "updated" }));
+    expect(controller.remove("1")).toEqual(serviceMock.remove("1"));
+
+    await moduleRef.close();
+  });
+});
+`;
+  }
+
+  return `import "reflect-metadata";
+import { Logger } from "@xtaskjs/common";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Controller } from "./${tokens.kebabName}.controller";
+import { ${tokens.pascalName}Service } from "./${tokens.kebabName}.service";
+
+const loggerMock: Pick<Logger, "info" | "warn" | "error"> = {
+  info: () => undefined,
+  warn: () => undefined,
+  error: () => undefined,
+};
+
+const serviceMock = {
+  findAll: () => [{ id: "sample" }],
+};
+
+describe("${tokens.pascalName}Controller", () => {
+  test("resolves controller from the testing module", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Controller,
+        { provide: Logger, useValue: loggerMock },
+        { provide: ${tokens.pascalName}Service, useValue: serviceMock },
+      ],
+    }).compile();
+
+    const controller = moduleRef.get(${tokens.pascalName}Controller);
+    const result = controller.index() as { resource?: string; items?: unknown[] };
+
+    expect(result.resource).toBe(${JSON.stringify(tokens.kebabName)});
+    expect(result.items).toEqual(serviceMock.findAll());
+
+    await moduleRef.close();
+  });
+});
+`;
+}
+
+export function renderServiceTestTemplate(tokens: NameTokens, options: { run?: boolean } = {}): string {
+  if (!options.run) {
+    return `import "reflect-metadata";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Service } from "./${tokens.kebabName}.service";
+
+describe("${tokens.pascalName}Service", () => {
+  test.skip("resolves service from the testing module", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Service,
+        // Add provider overrides here when the service has constructor dependencies.
+      ],
+    }).compile();
+
+    const service = moduleRef.get(${tokens.pascalName}Service);
+
+    expect(service).toBeDefined();
+
+    await moduleRef.close();
+  });
+});
+`;
+  }
+
+  return `import "reflect-metadata";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Repository } from "./${tokens.kebabName}.repository";
+import { ${tokens.pascalName}Service } from "./${tokens.kebabName}.service";
+
+const repositoryMock = {
+  findAll: () => [{ id: "sample" }],
+};
+
+describe("${tokens.pascalName}Service", () => {
+  test("resolves service from the testing module", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        ${tokens.pascalName}Service,
+        { provide: ${tokens.pascalName}Repository, useValue: repositoryMock },
+      ],
+    }).compile();
+
+    const service = moduleRef.get(${tokens.pascalName}Service);
+
+    expect(service.findAll()).toEqual(repositoryMock.findAll());
+
+    await moduleRef.close();
+  });
+});
+`;
+}
+
+export function renderRepositoryTestTemplate(tokens: NameTokens, options: { run?: boolean } = {}): string {
+  return `import "reflect-metadata";
+import { describe, expect, test } from "vitest";
+import { Test } from "@xtaskjs/testing";
+import { ${tokens.pascalName}Repository } from "./${tokens.kebabName}.repository";
+
+describe("${tokens.pascalName}Repository", () => {
+  ${options.run ? "test" : "test.skip"}("resolves repository from the testing module", async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [${tokens.pascalName}Repository],
+    }).compile();
+
+    const repository = moduleRef.get(${tokens.pascalName}Repository);
+
+    expect(repository.findAll()).toEqual([]);
+
+    await moduleRef.close();
+  });
+});
+`;
 }
 
 export function renderCrudRepositoryTemplate(tokens: NameTokens): string {
