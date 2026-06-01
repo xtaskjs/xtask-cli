@@ -1,4 +1,4 @@
-import test from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { InvalidArgumentError } from "commander";
 import {
@@ -52,23 +52,21 @@ test("buildInstallArguments uses add for pnpm yarn and bun", () => {
 });
 
 test("resolveLatestModuleVersions returns published versions", async () => {
-  const fetchMock = async () => {
-    return new Response(JSON.stringify({ version: "1.2.3" }), {
+  const fetchMock: typeof fetch = () => {
+    return Promise.resolve(new Response(JSON.stringify({ version: "1.2.3" }), {
       status: 200,
       headers: { "content-type": "application/json" },
-    });
+    }));
   };
 
-  const result = await resolveLatestModuleVersions(["@xtaskjs/core"], fetchMock as typeof fetch);
+  const result = await resolveLatestModuleVersions(["@xtaskjs/core"], fetchMock);
   assert.deepEqual(result, [{ packageName: "@xtaskjs/core", version: "1.2.3" }]);
 });
 
 test("resolveLatestModuleVersions marks failures as unavailable", async () => {
-  const fetchMock = async () => {
-    throw new Error("network error");
-  };
+  const fetchMock: typeof fetch = () => Promise.reject(new Error("network error"));
 
-  const result = await resolveLatestModuleVersions(["@xtaskjs/core"], fetchMock as typeof fetch);
+  const result = await resolveLatestModuleVersions(["@xtaskjs/core"], fetchMock);
   assert.deepEqual(result, [{ packageName: "@xtaskjs/core", version: "unavailable" }]);
 });
 

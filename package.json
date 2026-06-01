@@ -1,35 +1,35 @@
 {
-  "name": "@xtaskjs/cli",
-  "version": "0.1.3",
-  "description": "Commander-based CLI for creating and scaffolding XTaskJS projects.",
-  "type": "module",
-  "bin": {
-    "xtask": "./dist/xtask.js"
-  },
+  "name": "xtaskjs",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "start": "tsx src/xtask.ts",
-    "dev": "tsx watch src/xtask.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test tests/**/*.test.ts"
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck --concurrency=1",
+    "test": "turbo run test --concurrency=1",
+    "test:watch": "pnpm --filter @xtaskjs/cli test:watch",
+    "test:coverage": "turbo run test:coverage --concurrency=1",
+    "lint": "eslint 'packages/*/{src,tests}/**/*.ts'",
+    "lint:fix": "eslint 'packages/*/{src,tests}/**/*.ts' --fix",
+    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "clean": "rm -rf .turbo packages/*/dist packages/*/coverage"
   },
-  "keywords": [
-    "xtaskjs",
-    "commander",
-    "cli",
-    "typescript"
-  ],
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "commander": "^14.0.1",
-    "tar": "^7.4.3"
+  "pnpm": {
+    "overrides": {
+      "tar": ">=7.5.11",
+      "esbuild": ">=0.25.0",
+      "vite": ">=6.4.2"
+    }
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^4.1.7",
+    "eslint": "^10.4.1",
+    "globals": "^17.6.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "turbo": "^2.9.14",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.60.0",
+    "vitest": "^4.1.7"
   }
 }

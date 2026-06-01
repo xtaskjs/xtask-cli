@@ -1,3 +1,4 @@
+import process from "node:process";
 import { Command, InvalidArgumentError } from "commander";
 import { runCommand } from "../utils/process.js";
 
@@ -48,7 +49,7 @@ export function addCommand(): Command {
     .option(
       "--package-manager <manager>",
       "Package manager used to install modules (npm, pnpm, yarn, bun)",
-      "npm",
+      "pnpm",
     )
     .action(async (rawModules: string[], options: AddOptions) => {
       if (options.list) {
@@ -58,7 +59,7 @@ export function addCommand(): Command {
         return;
       }
 
-      const packageManager = parsePackageManager(options.packageManager ?? "npm");
+      const packageManager = parsePackageManager(options.packageManager ?? "pnpm");
       const modules = resolveModules(rawModules, Boolean(options.all));
       const args = buildInstallArguments(packageManager, modules);
 

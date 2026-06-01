@@ -1,8 +1,13 @@
-# xtask-cli
+# xtaskjs Workspace
 
-Console client for bootstrapping XTaskJS applications from the official TypeScript starter and generating common source artifacts such as controllers, services, repositories, DTOs, guards, middleware, feature modules, and full resources.
+Workspace local con el paquete del CLI de XTaskJS en `packages/cli`, alineado con la organización actual del repositorio upstream basada en `pnpm` y `turbo`.
 
-## Features
+## Workspace Layout
+
+- `packages/cli`: paquete publicable `@xtaskjs/cli`
+- raíz: scripts compartidos de `turbo`, `eslint` y `vitest`
+
+## CLI Features
 
 - `create`: downloads `xtaskjs/typescript-starter` into a target directory
 - `generate controller`: creates an XTaskJS controller skeleton
@@ -25,207 +30,216 @@ Console client for bootstrapping XTaskJS applications from the official TypeScri
 ## Install
 
 ```bash
-npm install
+pnpm install
+```
+
+## Workspace Commands
+
+```bash
+pnpm build
+pnpm test
+pnpm lint
+pnpm check
 ```
 
 ## Usage
 
-Run from source while developing:
+Run the CLI package from source while developing:
 
 ```bash
-npm run start -- --help
+pnpm --filter @xtaskjs/cli start -- --help
 ```
 
-Build the CLI:
+Build the workspace packages:
 
 ```bash
-npm run build
+pnpm build
 ```
 
-Run the automated generator tests:
+Run the automated CLI tests:
 
 ```bash
-npm test
+pnpm test
 ```
 
 Install globally from npm:
 
 ```bash
-npm install -g @xtaskjs/cli
+pnpm add -g @xtaskjs/cli
 xtask --help
 ```
 
 Create a new XTaskJS project:
 
 ```bash
-npm run start -- create my-api
+pnpm --filter @xtaskjs/cli start -- create my-api
 ```
 
 Skip dependency installation during project creation:
 
 ```bash
-npm run start -- create my-api --skip-install
+pnpm --filter @xtaskjs/cli start -- create my-api --skip-install
 ```
 
 Generate a controller inside an existing XTaskJS app:
 
 ```bash
-npm run start -- generate controller users
+pnpm --filter @xtaskjs/cli start -- generate controller users
 ```
 
 Generate a resource trio:
 
 ```bash
-npm run start -- generate resource billing
+pnpm --filter @xtaskjs/cli start -- generate resource billing
 ```
 
 Generate a resource scaffold with a DTO file:
 
 ```bash
-npm run start -- generate resource billing --with-dto
+pnpm --filter @xtaskjs/cli start -- generate resource billing --with-dto
 ```
 
 Generate a CRUD-oriented resource scaffold:
 
 ```bash
-npm run start -- generate resource billing --crud
+pnpm --filter @xtaskjs/cli start -- generate resource billing --crud
 ```
 
 Write a resource scaffold directly into the target directory:
 
 ```bash
-npm run start -- generate resource billing --path src/modules --flat
+pnpm --filter @xtaskjs/cli start -- generate resource billing --path src/modules --flat
 ```
 
 Generate a DTO for request validation:
 
 ```bash
-npm run start -- generate dto create-user
+pnpm --filter @xtaskjs/cli start -- generate dto create-user
 ```
 
 Generate a guard or middleware:
 
 ```bash
-npm run start -- generate guard admin-auth
-npm run start -- generate middleware request-metrics
+pnpm --filter @xtaskjs/cli start -- generate guard admin-auth
+pnpm --filter @xtaskjs/cli start -- generate middleware request-metrics
 ```
 
 Generate a feature module folder:
 
 ```bash
-npm run start -- generate module billing --path src/modules
+pnpm --filter @xtaskjs/cli start -- generate module billing --path src/modules
 ```
 
 Generate a Socket.IO gateway scaffold:
 
 ```bash
-npm run start -- generate gateway chat
+pnpm --filter @xtaskjs/cli start -- generate gateway chat
 ```
 
 Generate a value object scaffold:
 
 ```bash
-npm run start -- generate value-object email-address
+pnpm --filter @xtaskjs/cli start -- generate value-object email-address
 ```
 
 Generate event-source aggregate and subscriber scaffolds:
 
 ```bash
-npm run start -- generate event-aggregate users
-npm run start -- generate event-subscriber users
+pnpm --filter @xtaskjs/cli start -- generate event-aggregate users
+pnpm --filter @xtaskjs/cli start -- generate event-subscriber users
 ```
 
 Generate throttler guard and config scaffolds:
 
 ```bash
-npm run start -- generate throttle-guard api
-npm run start -- generate throttle-config api
+pnpm --filter @xtaskjs/cli start -- generate throttle-guard api
+pnpm --filter @xtaskjs/cli start -- generate throttle-config api
 ```
 
 Generate a module and wire a guard into its controller:
 
 ```bash
-npm run start -- generate module billing --path src/modules --with-guard
+pnpm --filter @xtaskjs/cli start -- generate module billing --path src/modules --with-guard
 ```
 
 Keep a module scaffold flat in the current target path:
 
 ```bash
-npm run start -- generate module billing --path src/modules/billing --flat
+pnpm --filter @xtaskjs/cli start -- generate module billing --path src/modules/billing --flat
 ```
 
 Generate files in a different source directory:
 
 ```bash
-npm run start -- generate service auth --path src/modules/auth
+pnpm --filter @xtaskjs/cli start -- generate service auth --path src/modules/auth
 ```
 
 List registered cache models from a running XTaskJS app:
 
 ```bash
-npm run start -- cache models
+pnpm --filter @xtaskjs/cli start -- cache models
 ```
 
 Inspect one cache model:
 
 ```bash
-npm run start -- cache model products
+pnpm --filter @xtaskjs/cli start -- cache model products
 ```
 
 Inspect a single cache entry:
 
 ```bash
-npm run start -- cache entry products 42
+pnpm --filter @xtaskjs/cli start -- cache entry products 42
 ```
 
 Clear one model or all registered models:
 
 ```bash
-npm run start -- cache clear products
-npm run start -- cache clear-all
+pnpm --filter @xtaskjs/cli start -- cache clear products
+pnpm --filter @xtaskjs/cli start -- cache clear-all
 ```
 
 Inspect HTTP/browser cache metadata exposed by `createCacheManagementController()`:
 
 ```bash
-npm run start -- cache http-routes
-npm run start -- cache http-route --method GET --path /articles/landing
+pnpm --filter @xtaskjs/cli start -- cache http-routes
+pnpm --filter @xtaskjs/cli start -- cache http-route --method GET --path /articles/landing
 ```
 
 Target a different server or management controller path:
 
 ```bash
-npm run start -- cache models --server http://127.0.0.1:4000 --management-path /internal/cache
+pnpm --filter @xtaskjs/cli start -- cache models --server http://127.0.0.1:4000 --management-path /internal/cache
 ```
 
 Install one or more XTaskJS modules in the current project:
 
 ```bash
-npm run start -- add cache queues socket-io
+pnpm --filter @xtaskjs/cli start -- add cache queues socket-io
 ```
 
 Install all currently published XTaskJS modules:
 
 ```bash
-npm run start -- add --all
+pnpm --filter @xtaskjs/cli start -- add --all
 ```
 
 Use a different package manager for module installation:
 
 ```bash
-npm run start -- add typeorm cqrs --package-manager pnpm
+pnpm --filter @xtaskjs/cli start -- add typeorm cqrs --package-manager pnpm
 ```
 
 List the official modules with their latest published npm version:
 
 ```bash
-npm run start -- add --list
+pnpm --filter @xtaskjs/cli start -- add --list
 ```
 
 List only selected modules and versions:
 
 ```bash
-npm run start -- add --list core cache socket-io
+pnpm --filter @xtaskjs/cli start -- add --list core cache socket-io
 ```
 
 ## Troubleshooting
@@ -236,8 +250,8 @@ Useful commands:
 
 ```bash
 node -v
-npm prefix -g
-npm list -g --depth=0 @xtaskjs/cli
+pnpm root -g
+pnpm list -g --depth=0 @xtaskjs/cli
 type -a xtask
 ```
 
@@ -246,7 +260,7 @@ If you use `nvm`, global packages are installed separately for each Node version
 Reinstall in the active Node version:
 
 ```bash
-npm install -g @xtaskjs/cli
+pnpm add -g @xtaskjs/cli
 hash -r
 xtask --help
 ```
@@ -254,7 +268,7 @@ xtask --help
 If you want to verify the published package without relying on the global install, run:
 
 ```bash
-npx @xtaskjs/cli --help
+pnpm dlx @xtaskjs/cli --help
 ```
 
 ## Notes

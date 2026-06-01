@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { Command } from "commander";
 import * as tar from "tar";
 import { ensureEmptyDirectory, pathExists } from "../utils/filesystem.js";
@@ -26,7 +27,7 @@ export function createCommand(): Command {
     .option(
       "--package-manager <manager>",
       "Package manager used after scaffolding (npm, pnpm, yarn, bun)",
-      "npm",
+      "pnpm",
     )
     .action(async (projectName: string, directory: string | undefined, options: CreateOptions) => {
       const targetDirectory = resolve(process.cwd(), directory ?? projectName);
@@ -38,13 +39,13 @@ export function createCommand(): Command {
       await customizeStarter(targetDirectory, packageName, displayName);
 
       if (!options.skipInstall) {
-        const manager = options.packageManager ?? "npm";
+        const manager = options.packageManager ?? "pnpm";
         await runCommand(manager, installArgumentsFor(manager), { cwd: targetDirectory });
       }
 
       const nextCommand = options.skipInstall
-        ? `${options.packageManager ?? "npm"} install`
-        : `${options.packageManager ?? "npm"} start`;
+        ? `${options.packageManager ?? "pnpm"} install`
+        : `${options.packageManager ?? "pnpm"} start`;
 
       console.log(`Created XTaskJS project in ${targetDirectory}`);
       console.log(`Next: cd ${targetDirectory} && ${nextCommand}`);
@@ -65,7 +66,7 @@ async function downloadStarter(targetDirectory: string): Promise<void> {
   }
 
   await pipeline(
-    Readable.fromWeb(response.body as any),
+    Readable.fromWeb(response.body as unknown as NodeReadableStream),
     tar.x({
       cwd: targetDirectory,
       strip: 1,

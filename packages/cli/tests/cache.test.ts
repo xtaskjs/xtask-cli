@@ -1,4 +1,4 @@
-import test from "node:test";
+import { test } from "vitest";
 import assert from "node:assert/strict";
 import { cacheCommand } from "../src/commands/cache.js";
 
@@ -118,18 +118,20 @@ function mockFetch(response: MockFetchResponse): () => void {
   fetchCalls.length = 0;
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+  const mockedFetch: typeof fetch = (input: string | URL | Request, init?: RequestInit) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
     fetchCalls.push({ url, init });
 
-    return new Response(JSON.stringify(response.body), {
+    return Promise.resolve(new Response(JSON.stringify(response.body), {
       status: response.status ?? (response.ok ? 200 : 500),
       statusText: response.statusText ?? (response.ok ? "OK" : "Internal Server Error"),
       headers: {
         "content-type": response.contentType ?? "application/json",
       },
-    });
-  }) as typeof fetch;
+    }));
+  };
+
+  globalThis.fetch = mockedFetch;
 
   return () => {
     globalThis.fetch = originalFetch;
