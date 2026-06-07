@@ -16,10 +16,14 @@ test("resolveModules maps aliases and removes duplicates", () => {
 
 test("resolveModules supports --all mode", () => {
   const modules = resolveModules([], true);
+  assert.ok(modules.includes("@xtaskjs/bots"));
+  assert.ok(modules.includes("@xtaskjs/config"));
   assert.ok(modules.includes("@xtaskjs/core"));
+  assert.ok(modules.includes("@xtaskjs/mcp"));
   assert.ok(modules.includes("@xtaskjs/socket-io"));
   assert.ok(modules.includes("@xtaskjs/testing"));
   assert.ok(modules.includes("@xtaskjs/throttler"));
+  assert.ok(modules.includes("@xtaskjs/validation"));
   assert.ok(modules.includes("@xtaskjs/value-objects"));
 });
 
@@ -29,13 +33,34 @@ test("resolveModules fails for unknown module names", () => {
 
 test("resolveListModules lists all modules by default", () => {
   const modules = resolveListModules([], false);
-  assert.ok(modules.includes("@xtaskjs/core"));
-  assert.ok(modules.includes("@xtaskjs/socket-io"));
+  assert.deepEqual(modules, [
+    "@xtaskjs/common",
+    "@xtaskjs/core",
+    "@xtaskjs/config",
+    "@xtaskjs/value-objects",
+    "@xtaskjs/validation",
+    "@xtaskjs/express-http",
+    "@xtaskjs/fastify-http",
+    "@xtaskjs/typeorm",
+    "@xtaskjs/security",
+    "@xtaskjs/mailer",
+    "@xtaskjs/cache",
+    "@xtaskjs/scheduler",
+    "@xtaskjs/queues",
+    "@xtaskjs/socket-io",
+    "@xtaskjs/internationalization",
+    "@xtaskjs/throttler",
+    "@xtaskjs/testing",
+    "@xtaskjs/cqrs",
+    "@xtaskjs/event-source",
+    "@xtaskjs/mcp",
+    "@xtaskjs/bots",
+  ]);
 });
 
 test("resolveListModules supports filtered module names", () => {
-  const modules = resolveListModules(["core", "cache", "socket-io"], false);
-  assert.deepEqual(modules, ["@xtaskjs/core", "@xtaskjs/cache", "@xtaskjs/socket-io"]);
+  const modules = resolveListModules(["core", "cache", "socket-io", "mcp", "bots"], false);
+  assert.deepEqual(modules, ["@xtaskjs/core", "@xtaskjs/cache", "@xtaskjs/socket-io", "@xtaskjs/mcp", "@xtaskjs/bots"]);
 });
 
 test("buildInstallArguments uses npm install", () => {

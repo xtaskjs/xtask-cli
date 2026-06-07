@@ -273,6 +273,18 @@ Install testing support for unit tests:
 pnpm --filter @xtaskjs/cli start -- add testing
 ```
 
+Install MCP integration support:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- add mcp
+```
+
+Install bots runtime support:
+
+```bash
+pnpm --filter @xtaskjs/cli start -- add bots
+```
+
 Install all currently published XTaskJS modules:
 
 ```bash
